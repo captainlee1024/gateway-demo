@@ -1,0 +1,37 @@
+// 首先设置语法支持
+syntax = "proto3";
+
+package echo;
+
+// 设置生成 go 代码的 package
+option go_package = ".;proto";
+
+// 定义传输结构体
+
+// EchoRequest is the request for echo.
+// 请求的结构体
+message EchoRequest {
+    string message = 1; // 一个参数 字符串格式 属性名 message
+}
+// EchoResponse is the response for echo.
+// 返回响应结构体
+message EchoResponse {
+    string message = 1;
+}
+
+// Echo is the echo service
+// 创建 echo 服务，支持四中请求方法
+service Echo{
+    // UnaryEcho is unary echo.
+    // 普通的 rpc 一元方法，入参 EchoRequest，返回 EchoResponse
+    rpc UnaryEcho (EchoRequest) returns (EchoResponse) {}
+    // ServerStreamingEcho is server side streaming.
+    // 服务端流式输出的方法，入参 EchoRequest，返回流式的 EchoResponse
+    rpc ServerStreamingEcho (EchoRequest) returns (stream EchoResponse) {}
+    // ClientStreamingEcho is client side streaming.
+    // 客户端接收流式数据的方法，入参流式 EchoRequest，返回 EchoResponse
+    rpc ClientStreamingEcho (stream EchoRequest) returns (EchoResponse) {}
+    // BidirectionalStreamingEcho is bidi streaming.
+    // 双向数据流，传入流式的 EchoRequest，并且返回流式的 EchoResponse
+    rpc BidirectionalStreamingEcho (stream EchoRequest) returns (stream EchoResponse) {}
+}
