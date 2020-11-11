@@ -1,0 +1,40 @@
+package grpcinterceptor
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"time"
+
+	"github.com/captainlee1024/gateway-demo/proxy/public"
+	"google.golang.org/grpc"
+)
+
+// GrpcFlowCountUnaryInterceptor 普通 RPC 流量统计
+func GrpcFlowCountUnaryInterceptor(ctx context.Context, req interface{},
+	info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	counter, _ := public.NewFlowCountService("local_app", time.Second)
+	counter.Increase()
+	fmt.Println("QPS:", counter.QPS)
+	fmt.Println("TotalCOunt:", counter.TotalCount)
+	m, err := handler(ctx, req)
+	if err != nil {
+		log.Printf("RPC failed with error %v\n", err)
+	}
+	return m, err
+}
+
+// GrpcFlowCountStreamInterceptor 流式 RPC 流量统计
+func GrpcFlowCountStreamInterceptor(counter *public.FlowCountService) func(
+	srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		counter.Increase()
+		fmt.Println("Grpc Stream QPS:", counter.QPS)
+		fmt.Println("Grpc Stream TotalCOunt", counter.TotalCount)
+		err := handler(srv, newWrappedStream(ss))
+		if err != nil {
+			log.Printf("RPC failed with error %v\n", err)
+		}
+		return err
+	}
+}
