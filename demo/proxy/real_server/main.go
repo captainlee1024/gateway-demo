@@ -39,6 +39,7 @@ func (r *RealServer) Run() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", r.HelloHandler)
 	mux.HandleFunc("/base/error", r.ErrorHandler)
+	mux.HandleFunc("/test_strip_uri/test_strip_uri/aa", r.TimeoutHandler)
 	server := &http.Server{
 		Addr:         r.Addr,
 		WriteTimeout: time.Second * 3,
@@ -58,9 +59,11 @@ func (r *RealServer) HelloHandler(w http.ResponseWriter, req *http.Request) {
 
 	realIP := fmt.Sprintf("RemoteAddr=%s, X-Forwarded-For=%v, X-Real-IP=%v\n",
 		req.RemoteAddr, req.Header.Get("X-Forwarded-For"), req.Header.Get("X-Real-Ip"))
+	header := fmt.Sprintf("headers := %v\n", req.Header)
 
 	io.WriteString(w, upath)
 	w.Write([]byte(realIP))
+	w.Write([]byte(header))
 	w.Write([]byte("hello\n"))
 
 }
@@ -70,4 +73,13 @@ func (r *RealServer) ErrorHandler(w http.ResponseWriter, req *http.Request) {
 	//upath := "error handler"
 	w.WriteHeader(500)
 	w.Write([]byte("error handler\n"))
+}
+
+// TimeOutHandler 超时测试
+func (r *RealServer) TimeoutHandler(w http.ResponseWriter, req *http.Request) {
+	time.Sleep(6 * time.Second)
+	upath := "Timeout handler"
+	w.WriteHeader(200)
+	io.WriteString(w, upath)
+	//w.Write([]byte("timeout handler\n"))
 }
