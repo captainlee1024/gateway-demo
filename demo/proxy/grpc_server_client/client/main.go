@@ -15,14 +15,16 @@ import (
 )
 
 var (
-	addr = flag.String("addr", "localhost:50051", "the address to connect to")
+	//addr = flag.String("addr", "localhost:50051", "the address to connect to")
+	addr = flag.String("addr", "localhost:8012", "the address to connect to")
 )
 
 const (
 	timestampFormat = time.StampNano // "jan_2 15:04:05.000"
 	streamingCount  = 10
 	// AccessToken xx
-	AccessToken = " some-secret-token1"
+	//AccessToken = " some-secret-token1"
+	AccessToken = " eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTA4ODc0MzAsImlzcyI6ImZyb250ZW5kX3Rlc3RfMSJ9.PIWxtmzcSXbgAG9RWpPIJZhYjub61i1A90ajHA8SapM"
 )
 
 func unaryCallWithMetadata(c pb.EchoClient, message string) {
@@ -134,7 +136,9 @@ const message = "this is examplse/metadata"
 func main() {
 	flag.Parse()
 	wg := sync.WaitGroup{}
-	for i := 0; i < 1; i++ {
+	//for i := 0; i < 1; i++ {
+	// 两个并发测试限流中间件
+	for i := 0; i < 2; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -154,10 +158,14 @@ func main() {
 
 			// 服务端流式
 			serverStreamingWithMetadata(c, message)
-			time.Sleep(time.Second * 1)
+			//time.Sleep(time.Second * 1)
+			// 限流测试，缩小睡眠时间
+			time.Sleep(time.Millisecond * 400)
 
 			// 客户端流式
 			clientStreamWithMetadta(c, message)
+			//time.Sleep(time.Millisecond * 400)
+			// 限流测试，缩小睡眠时间
 			time.Sleep(time.Second * 1)
 
 			// 双向流式

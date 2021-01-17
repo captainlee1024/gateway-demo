@@ -84,7 +84,7 @@ func (s *server) UnaryEcho(ctx context.Context, in *pb.EchoRequest) (*pb.EchoRes
 	if !ok {
 		log.Println("miss metadata from context")
 	}
-	fmt.Println("md", md)
+	fmt.Printf("md ========> %#v\n", md)
 	fmt.Printf("request received:%v, sending echo\n", in)
 	return &pb.EchoResponse{Message: in.Message}, nil
 }
